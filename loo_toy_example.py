@@ -51,7 +51,7 @@ posterior_distr = stats.norm(loc=mu_post, scale=std_post)
 
 posterior_samples = posterior_distr.rvs(size=N_POSTERIOR_SAMPLES)
 posterior_predictive_distr = stats.norm(loc=posterior_samples[:, np.newaxis], scale=std_lh)
-lpd = posterior_predictive_distr.logpdf(data[np.newaxis, :])
+lpd = posterior_predictive_distr.logpdf(data)[np.newaxis, :, :]
 
 # # Evaluate log-likelihood according to the same distribution
 independent_loo = np.sum(lpd, axis=-1)
@@ -61,8 +61,12 @@ print(np.log(np.mean(np.exp(independent_loo))))
 # they should not affect the result of loo) and the log_likelihood in a separate group.
 idata = az.InferenceData(
     posterior=az.convert_to_dataset(posterior_samples.T),
-    log_likelihood=az.convert_to_dataset(lpd.T)
+    log_likelihood=az.convert_to_dataset(lpd)
 )
 
 # Now we can use the loo() function in Arviz
-loo = az.loo(idata, pointwise=True)
+loo = az.loo(idata)
+loo_pointwise = az.loo(idata, pointwise=True)
+
+print("loo = ", az.loo(idata))
+print("k = ", loo_pointwise.pareto_k.to_numpy())
