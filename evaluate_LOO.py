@@ -81,6 +81,13 @@ def main(results_dir: Path, burnin: float = 0.1):
 
         print()
 
+    df = df.reset_index()
+    if len(df.k.unique()) == 1:
+        sn.boxplot(df, x="experiment", y="elpd_loo")
+    else:
+        sn.lineplot(df, x="k", y="elpd_loo", hue="experiment")
+    plt.show()
+
 
 def cli():
     """Read the results directory as a command line argument and pass it to the main function."""
